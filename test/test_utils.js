@@ -118,33 +118,75 @@ describe('utils::helpers', function () {
             });
         });
     });
-    describe('trivialWalk', function () {
-        before('set dir structure', function (callback) {
+    describe('trivialWalk and populateModelRoutes', function () {
+        before('create full tree', function (callback) {
             return fs_1.mkdtemp(path_1.join(os_1.tmpdir(), 'nodejs-utils-test_'), function (err, dir) {
                 if (err)
                     return callback(err);
                 _this.dir = dir;
                 _this.tree = [
-                    [_this.dir, 'foo.txt'],
-                    [path_1.join(_this.dir, 'bar'), 'haz.txt'],
-                    [path_1.join(_this.dir, 'can'), 'baz.ts'],
-                    [path_1.join(_this.dir, 'can'), 'baz.js']
+                    [_this.dir, 'routes.js'],
+                    [path_1.join(_this.dir, 'api', 'jarring'), 'routes.js'],
+                    [path_1.join(_this.dir, 'api3', 'car'), 'models.js'],
+                    [path_1.join(_this.dir, 'can'), 'routes.js'],
+                    [path_1.join(_this.dir, 'jar', 'far', 'raw'), 'models.js'],
+                    [path_1.join(_this.dir, 'node_modules', 'far', 'raw'), 'admin.js'],
                 ];
                 async.map(_this.tree, function (dir_file, cb) {
                     return async.series([
                         function (call_back) { return index_1.mkdirP(dir_file[0], call_back); },
                         function (call_back) {
-                            return fs_1.writeFile(path_1.join.apply(void 0, dir_file), '', 'utf8', call_back);
+                            return fs_1.open(path_1.join.apply(void 0, dir_file), 'w', call_back);
+                        },
+                        function (call_back) {
+                            return fs_1.writeFile(path_1.join.apply(void 0, dir_file), 'exports.bar = function(){}', 'utf8', call_back);
                         }
                     ], cb);
                 }, callback);
             });
         });
-        after('cleanup created tree', function (callback) {
+        after('delete full tree', function (callback) {
             return rimraf(_this.dir, callback);
         });
-        it('Returns simple list', function () {
-            chai_1.expect(index_1.trivialWalk(_this.dir)).to.have.members(_this.tree.map(function (dir_file) { return path_1.join.apply(void 0, dir_file); }));
+        before('create empty tree', function (callback) {
+            return fs_1.mkdtemp(path_1.join(os_1.tmpdir(), 'nodejs-utils-test_'), function (err, dir) {
+                if (err)
+                    return callback(err);
+                _this.empty_dir = dir;
+                return callback();
+            });
+        });
+        after('delete empty tree', function (callback) {
+            return fs_1.rmdir(_this.empty_dir, callback);
+        });
+        describe('trivialWalk', function () {
+            it('should work on empty tree', function () {
+                var res = index_1.trivialWalk(_this.empty_dir);
+                chai_1.expect(res).to.be.an.instanceOf(Array);
+                chai_1.expect(res).to.be.empty || (function () { return undefined; })();
+            });
+            it('should work 3 levels deep', function () {
+                return chai_1.expect(index_1.trivialWalk(_this.dir)).to.have.members(_this.tree.map(function (dir_file) { return path_1.join.apply(void 0, dir_file); }));
+            });
+            it('should filter 3 levels deep', function () {
+                return chai_1.expect(index_1.trivialWalk(_this.dir, ['node_modules'])).to.have.members(_this.tree.map(function (dir_file) { return path_1.join.apply(void 0, dir_file); }));
+            });
+        });
+        describe('populateModelRoutes', function () {
+            it('should work on empty tree', function () {
+                var res = index_1.populateModelRoutes(_this.empty_dir);
+                chai_1.expect(res).to.be.an.instanceOf(Object);
+                chai_1.expect(res).to.be.empty || (function () { return undefined; })();
+            });
+            it('should work 3 levels deep', function () {
+                var res = index_1.populateModelRoutes(_this.dir);
+                chai_1.expect(res).to.be.an.instanceOf(Object);
+                var keys = [
+                    'jarring', 'car', 'can', 'raw', path_1.basename(_this.dir)
+                ];
+                chai_1.expect(res).to.have.all.keys(keys);
+                keys.map(function (key) { return chai_1.expect(res[key]).to.have.any.keys(['models', 'admin', 'routes']); });
+            });
         });
     });
 });

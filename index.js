@@ -111,21 +111,14 @@ function trivialWalk(dir, excludeDirs) {
     }, []);
 }
 exports.trivialWalk = trivialWalk;
+var excludeDirs = ['node_modules', 'typings', 'bower_components', '.git', '.idea', 'test'];
 function populateModelRoutes(dir) {
-    return objListToObj(Array.prototype.concat.apply([], trivialWalk(dir, ['node_modules', 'typings', 'bower_components', '.git', '.idea', 'test']).map(function (p) {
-        var fst = (function (_idx) { return _idx === -1 ? p.length : _idx; })(p.indexOf(path_1.sep));
-        var snd = (function (_idx) { return _idx === -1 ? p.length : _idx; })(p.indexOf(path_1.sep, fst + 1));
-        var allowedFnames = ['models.js', 'routes.js', 'admin.js'];
-        var fname = (function (f) { return allowedFnames.indexOf(f) !== -1 ? f : null; })(p.slice(snd + 1, p.length));
-        return fname ? (_a = {},
-            _a[p.slice(fst + 1, snd)] = (_b = {},
-                _b[p.slice(p.lastIndexOf(path_1.sep) + 1, p.indexOf('.'))] = require(['.', '..', p].join(path_1.sep).split(path_1.sep).join('/')),
-                _b
-            ),
-            _a
-        ) : undefined;
+    var allowedFnames = ['models.js', 'routes.js', 'admin.js'];
+    return objListToObj(trivialWalk(dir).filter(function (p) { return allowedFnames.indexOf(p.slice(p.lastIndexOf(path_1.sep) + 1)) !== -1; }).map(function (p) {
+        var lst = p.lastIndexOf(path_1.sep);
+        return (_a = {}, _a[p.slice(p.lastIndexOf(path_1.sep, lst - 1) + 1, lst)] = (_b = {}, _b[(lst !== -1 ? p.slice(lst + 1, p.lastIndexOf('.')) : path_1.sep)] = require(p[0] === path_1.sep || p[1] === ':' ? p : path_1.resolve("." + path_1.sep + p)), _b), _a);
         var _a, _b;
-    })).filter(function (_) { return _; }));
+    }));
 }
 exports.populateModelRoutes = populateModelRoutes;
 function objListToObj(objList) {
