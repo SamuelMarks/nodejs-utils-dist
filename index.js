@@ -1,4 +1,5 @@
 "use strict";
+var fs = require('fs');
 var fs_1 = require('fs');
 var path_1 = require('path');
 function trivial_merge(obj) {
@@ -157,3 +158,42 @@ function sanitiseSchema(schema, omit) {
     }));
 }
 exports.sanitiseSchema = sanitiseSchema;
+var _0777 = parseInt('0777', 8);
+function mkdirP(dir, opts, cb, made) {
+    dir = path_1.resolve(dir);
+    if (typeof opts === 'function') {
+        cb = opts;
+        opts = {};
+    }
+    else if (!opts || typeof opts !== 'object')
+        opts = { mode: opts };
+    opts.mode = opts.mode || (_0777 & (~process.umask()));
+    opts.fs = opts.fs || fs;
+    if (!made)
+        made = null;
+    cb = cb || (function () { return undefined; });
+    opts.fs.mkdir(dir, opts.mode, function (error) {
+        if (!error) {
+            made = made || dir;
+            return cb(null, made);
+        }
+        switch (error.code) {
+            case 'ENOENT':
+                mkdirP(path_1.dirname(dir), opts, function (err, made) {
+                    if (err)
+                        cb(err, made);
+                    else
+                        mkdirP(dir, opts, cb, made);
+                });
+                break;
+            default:
+                opts.fs.stat(dir, function (e, stat) {
+                    if (e || !stat.isDirectory())
+                        cb(error || e, made);
+                    else
+                        cb(null, made);
+                });
+        }
+    });
+}
+exports.mkdirP = mkdirP;

@@ -1,6 +1,12 @@
 "use strict";
+var _this = this;
+var async = require('async');
+var fs_1 = require('fs');
 var chai_1 = require('chai');
 var index_1 = require('../index');
+var os_1 = require('os');
+var path_1 = require('path');
+var rimraf = require('rimraf');
 describe('utils::helpers', function () {
     describe('binarySearch', function () {
         var array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -110,6 +116,35 @@ describe('utils::helpers', function () {
                 "identity": "postgres",
                 "user": "postgres"
             });
+        });
+    });
+    describe('trivialWalk', function () {
+        before('set dir structure', function (callback) {
+            return fs_1.mkdtemp(path_1.join(os_1.tmpdir(), 'nodejs-utils-test_'), function (err, dir) {
+                if (err)
+                    return callback(err);
+                _this.dir = dir;
+                _this.tree = [
+                    [_this.dir, 'foo.txt'],
+                    [path_1.join(_this.dir, 'bar'), 'haz.txt'],
+                    [path_1.join(_this.dir, 'can'), 'baz.ts'],
+                    [path_1.join(_this.dir, 'can'), 'baz.js']
+                ];
+                async.map(_this.tree, function (dir_file, cb) {
+                    return async.series([
+                        function (call_back) { return index_1.mkdirP(dir_file[0], call_back); },
+                        function (call_back) {
+                            return fs_1.writeFile(path_1.join.apply(void 0, dir_file), '', 'utf8', call_back);
+                        }
+                    ], cb);
+                }, callback);
+            });
+        });
+        after('cleanup created tree', function (callback) {
+            return rimraf(_this.dir, callback);
+        });
+        it('Returns simple list', function () {
+            chai_1.expect(index_1.trivialWalk(_this.dir)).to.have.members(_this.tree.map(function (dir_file) { return path_1.join.apply(void 0, dir_file); }));
         });
     });
 });
