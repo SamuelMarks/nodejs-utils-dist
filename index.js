@@ -112,11 +112,14 @@ function trivialWalk(dir, excludeDirs) {
 }
 exports.trivialWalk = trivialWalk;
 var excludeDirs = ['node_modules', 'typings', 'bower_components', '.git', '.idea', 'test'];
-function populateModelRoutes(dir) {
-    var allowedFnames = ['models.js', 'routes.js', 'admin.js'];
+function populateModelRoutes(dir, allowedFnames) {
+    if (allowedFnames === void 0) { allowedFnames = ['models.js', 'route.js', 'routes.js', 'admin.js']; }
     return objListToObj(trivialWalk(dir).filter(function (p) { return allowedFnames.indexOf(p.slice(p.lastIndexOf(path_1.sep) + 1)) !== -1; }).map(function (p) {
         var lst = p.lastIndexOf(path_1.sep);
-        return (_a = {}, _a[p.slice(p.lastIndexOf(path_1.sep, lst - 1) + 1, lst)] = (_b = {}, _b[(lst !== -1 ? p.slice(lst + 1, p.lastIndexOf('.')) : path_1.sep)] = require(p[0] === path_1.sep || p[1] === ':' ? p : path_1.resolve("." + path_1.sep + p)), _b), _a);
+        return (_a = {}, _a[p.slice(p.lastIndexOf(path_1.sep, lst - 1) + 1, lst)] = (_b = {},
+            _b[(lst !== -1 ? p.slice(lst + 1, p.lastIndexOf('.')) : path_1.sep)] = require(p[0] === path_1.sep || p[1] === ':' ? p : path_1.resolve("." + path_1.sep + p)),
+            _b
+        ), _a);
         var _a, _b;
     }));
 }
