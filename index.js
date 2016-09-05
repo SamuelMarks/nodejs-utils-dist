@@ -33,6 +33,7 @@ function uri_to_config(uri) {
                         return { host: arr[1] };
                     return {
                         pass: arr[1].substr(0, at_at),
+                        password: arr[1].substr(0, at_at),
                         host: arr[1].substr(at_at + 1)
                     };
                 }(), function port_db() {
@@ -62,7 +63,7 @@ function uri_to_config(uri) {
                     var at_at = arr[1].search('@');
                     if (at_at === -1)
                         return host_db(arr[1]);
-                    return trivial_merge({ password: arr[1].substr(0, at_at) }, host_db(arr[1].substr(at_at + 1)));
+                    return trivial_merge({ password: arr[1].substr(0, at_at), pass: arr[1].substr(0, at_at) }, host_db(arr[1].substr(at_at + 1)));
                 }());
             case 1:
                 return {
