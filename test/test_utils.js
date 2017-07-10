@@ -1,12 +1,13 @@
 "use strict";
 var _this = this;
-var async = require('async');
-var fs_1 = require('fs');
-var chai_1 = require('chai');
-var index_1 = require('../index');
-var os_1 = require('os');
-var path_1 = require('path');
-var rimraf = require('rimraf');
+Object.defineProperty(exports, "__esModule", { value: true });
+var async = require("async");
+var fs_1 = require("fs");
+var chai_1 = require("chai");
+var index_1 = require("../index");
+var os_1 = require("os");
+var path_1 = require("path");
+var rimraf = require("rimraf");
 describe('utils::helpers', function () {
     describe('binarySearch', function () {
         var array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -98,36 +99,6 @@ describe('utils::helpers', function () {
                 { bar: 'can', haz: 'baz' },
                 { title: 'foo', haz: 'baz' }
             ].map(function (request) { return chai_1.expect(index_1.isShallowSubset(request, schema)).to.be.false; }); });
-        });
-    });
-    describe('uri_to_config', function () {
-        it('should work with full', function () {
-            return chai_1.expect(index_1.uri_to_config('postgresql://postgres:postgres@localhost/postgres')).to.deep.equal({
-                "database": "postgres",
-                "host": "localhost",
-                "identity": "postgres",
-                "pass": "postgres",
-                "password": "postgres",
-                "user": "postgres"
-            });
-        });
-        it('should work with minimal', function () {
-            return chai_1.expect(index_1.uri_to_config('postgresql://localhost')).to.deep.equal({
-                "host": "localhost",
-                "identity": "postgres",
-                "user": "postgres"
-            });
-        });
-        it('should work with dokku', function () {
-            return chai_1.expect(index_1.uri_to_config('postgres://postgres:f1d610fa5e04f3a1@dokku-postgres-se:5432/node_db')).to.deep.equal({
-                "database": "node_db",
-                "host": "dokku-postgres-se",
-                "identity": "postgres",
-                "pass": "f1d610fa5e04f3a1",
-                "password": "f1d610fa5e04f3a1",
-                "port": "5432",
-                "user": "postgres"
-            });
         });
     });
     describe('trivialWalk and populateModelRoutes', function () {
