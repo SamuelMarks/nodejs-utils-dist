@@ -124,6 +124,6 @@ exports.uri_to_config = (uri) => {
     return Object.assign({
         host: comps.host,
         database: comps.path.length > 2 ? comps.path.slice(1) : undefined,
-        port: comps.port
+        port: comps.port || 5432
     }, user_obj);
 };
