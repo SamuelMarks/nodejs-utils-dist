@@ -127,3 +127,4 @@ exports.uri_to_config = (uri) => {
         port: comps.port || 5432
     }, user_obj);
 };
+exports.raise = (throws) => { throw throws; };

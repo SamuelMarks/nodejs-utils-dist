@@ -1,6 +1,6 @@
 .idea/
 typings/
-*.js
+*.ts
 *.map
 logs/
 *.log
