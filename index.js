@@ -127,4 +127,18 @@ exports.uri_to_config = (uri) => {
         port: comps.port || 5432
     }, user_obj);
 };
-exports.raise = (throws) => { throw throws; };
+exports.raise = (throwable) => { throw throwable; };
+exports.getError = (err) => {
+    if (err === false)
+        return null;
+    if (typeof err['jse_shortmsg'] !== 'undefined') {
+        const e = err;
+        return e != null && e.body && e.body.error_message ? JSON.parse(e.body.error_message) : e;
+    }
+    if (err != null && typeof err['text'] !== 'undefined')
+        err.message += ' | ' + err['text'];
+    return err;
+};
+exports.superEndCb = (callback) => (e, r) => callback(r != null && r.error != null ? exports.getError(r.error) : exports.getError(e), r);
+exports.debugCb = (name, callback) => (e, r) => console.warn(`${name}::e =`, e, `;\n${name}::r =`, r, ';') || callback(e, r);
+exports.uniqIgnoreCb = (callback) => (err, res) => callback(err != null && err.message != null && err.message.indexOf('E_UNIQUE') === -1 ? err : void 0, res);
