@@ -48,14 +48,10 @@ exports.trivialWalk = (dir, excludeDirs) => {
     }, []);
 };
 const excludeDirs = ['node_modules', 'typings', 'bower_components', '.git', '.idea', 'test'];
-exports.populateModelRoutes = (dir, allowedFnames = ['models.js', 'route.js', 'routes.js', 'admin.js']) => exports.objListToObj(exports.trivialWalk(dir).filter(p => allowedFnames.indexOf(p.slice(p.lastIndexOf(path_1.sep) + 1)) !== -1).map(p => {
-    const lst = p.lastIndexOf(path_1.sep);
-    return {
-        [p.slice(p.lastIndexOf(path_1.sep, lst - 1) + 1, lst)]: {
-            [(lst !== -1 ? p.slice(lst + 1, p.lastIndexOf('.')) : path_1.sep)]: require(p[0] === path_1.sep || p[1] === ':' ? p : path_1.resolve(`.${path_1.sep}${p}`))
-        }
-    };
-}));
+exports.populateModelRoutes = (dir, allowedFnames = ['models.js', 'route.js', 'routes.js', 'admin.js']) => exports.build_dep_graph(exports.trivialWalk(dir)
+    .map(p => [path_1.basename(p), p])
+    .filter(([base, p]) => allowedFnames.indexOf(base) > -1)
+    .map(([base, p]) => ({ [path_1.join(path_1.basename(path_1.dirname(p)), base)]: require(path_1.resolve(p)) })));
 exports.objListToObj = (objList) => {
     const obj = {};
     objList.forEach(o => ((key) => obj[key] = obj[key] != null ?
@@ -142,3 +138,66 @@ exports.getError = (err) => {
 exports.superEndCb = (callback) => (e, r) => callback(r != null && r.error != null ? exports.getError(r.error) : exports.getError(e), r);
 exports.debugCb = (name, callback) => (e, r) => console.warn(`${name}::e =`, e, `;\n${name}::r =`, r, ';') || callback(e, r);
 exports.uniqIgnoreCb = (callback) => (err, res) => callback(err != null && err.message != null && err.message.indexOf('E_UNIQUE') === -1 ? err : void 0, res);
+function* permute(permutation) {
+    const length = permutation.length;
+    const c = Array(length).fill(0);
+    let i = 1;
+    let k;
+    let p;
+    yield permutation.slice();
+    while (i < length) {
+        if (c[i] < i) {
+            k = i % 2 && c[i];
+            p = permutation[i];
+            permutation[i] = permutation[k];
+            permutation[k] = p;
+            ++c[i];
+            i = 1;
+            yield permutation.slice();
+        }
+        else {
+            c[i] = 0;
+            ++i;
+        }
+    }
+}
+exports.permute = permute;
+exports.build_dep_graph = (dependencies) => {
+    const is_valid = (dep_free, models2deps, folder_names) => {
+        const deps_existent = new Set(dep_free);
+        for (const folder_name of folder_names)
+            if (models2deps.get(folder_name)[1].some(dep => !deps_existent.has(dep)))
+                return false;
+            else
+                deps_existent.add(folder_name);
+        deps_existent.clear();
+        return true;
+    };
+    const models2deps = new Map();
+    const models_no_deps = new Map();
+    const routes = new Set();
+    const all_deps = new Map();
+    dependencies.forEach(dep => {
+        const k = Object.keys(dep)[0];
+        all_deps.set(k, dep[k]);
+        const d = path_1.dirname(k);
+        const b = path_1.basename(k, '.js');
+        if (['model', 'models'].indexOf(b) > -1) {
+            const deps = dep[k]._dependencies || dep[k]['dependencies'];
+            if (deps == null)
+                models_no_deps.set(d, k);
+            else
+                models2deps.set(d, [k, deps]);
+        }
+        else if (['admin', 'route', 'routes'].indexOf(b) > -1)
+            routes.add(k);
+    });
+    for (const models2deps_perm of permute(Array.from(models2deps).map(l => l[0])))
+        if (is_valid(Array.from(models_no_deps.keys()), models2deps, models2deps_perm))
+            return new Map(Array
+                .from(models_no_deps.values())
+                .concat(models2deps_perm.map(folder_name => models2deps.get(folder_name)[0]))
+                .concat(Array.from(routes.values()))
+                .map(fname => [fname, all_deps.get(fname)]));
+    throw Error('Logic error: no permutation of your models is valid. Check your dependency lists.');
+};

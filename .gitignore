@@ -1,6 +1,6 @@
 .idea/
 typings/
-*.ts
+*.js
 *.map
 logs/
 *.log
@@ -11,3 +11,4 @@ pids
 lib-cov/
 coverage/
 node_modules/
+nodejs-utils-*
