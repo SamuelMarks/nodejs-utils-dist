@@ -201,3 +201,21 @@ exports.build_dep_graph = (dependencies) => {
                 .map(fname => [fname, all_deps.get(fname)]));
     throw Error('Logic error: no permutation of your models is valid. Check your dependency lists.');
 };
+exports.groupByMap = (list, keyGetter) => {
+    const map = new Map();
+    const l = Array.from(list);
+    l.forEach(value => {
+        const key = keyGetter(value);
+        const collection = map.get(key);
+        if (!collection) {
+            map.set(key, [value]);
+        }
+        else {
+            collection.push(value);
+        }
+    });
+    return map;
+};
+exports.get_models_routes = (models_routes) => Array.from(exports.groupByMap(models_routes, k => k[0].slice(0, k[0].indexOf('/')))).reduce((a, b) => Object.assign(a, {
+    [b[0]]: b[1].map(fname_prog => ({ [path_1.basename(fname_prog[0], '.js')]: fname_prog[1] })).reduce((prev, curr) => Object.assign(prev, curr), {})
+}), {});
