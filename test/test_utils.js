@@ -80,9 +80,9 @@ describe('utils::helpers', () => {
                 [path_1.join(this.dir, 'node_modules', 'far', 'raw'), 'admin.js'],
             ];
             async.map(this.tree, (dir_file, cb) => async.series([
-                call_back => index_1.mkdirP(dir_file[0], call_back),
-                call_back => fs_1.open(path_1.join(...dir_file), 'w', call_back),
-                call_back => fs_1.writeFile(path_1.join(...dir_file), 'exports.bar = function(){}', 'utf8', call_back)
+                    call_back => index_1.mkdirP(dir_file[0], call_back),
+                    call_back => fs_1.open(path_1.join(...dir_file), 'w', call_back),
+                    call_back => fs_1.writeFile(path_1.join(...dir_file), 'exports.bar = function(){}', 'utf8', call_back)
             ], cb), callback);
         }));
         after('delete full tree', callback => rimraf(this.dir, callback));
