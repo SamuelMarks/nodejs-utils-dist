@@ -221,6 +221,6 @@ exports.get_models_routes = (models_routes) => Array.from(exports.groupByMap(mod
 }), {});
 exports.model_route_to_map = (model_route) => new Map(Object.entries(Object.keys(model_route).map(entity => Object.keys(model_route[entity]).map(m_or_r => ({ [path_1.join(entity, `${m_or_r}.js`)]: model_route[entity][m_or_r] }))).reduce((a, b) => a.concat(b), []).reduce((a, b) => Object.assign(a, b), {})));
 exports.toSentenceCase = (s) => `${s[0].toLocaleUpperCase()}${s.slice(1)}`;
-exports.resolveNumbersFromObject = (obj) => Object.keys(obj)
+exports.resolveIntFromObject = (obj) => Object.keys(obj)
     .map(k => ({ [k]: isNaN(obj[k]) ? obj[k] : parseInt(obj[k]) }))
     .reduce((a, b) => Object.assign(a, b), {});
