@@ -119,4 +119,11 @@ describe('utils::helpers', () => {
             });
         });
     });
+    describe('format', () => {
+        it('works with basic object', () => {
+            const json = { 'mises': 'was', 'was': 'right' };
+            const text = 'Mises ${mises} ${was}';
+            chai_1.expect(index_1.format(text, json)).to.be.eql('Mises was right');
+        });
+    });
 });
