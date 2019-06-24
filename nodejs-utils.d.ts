@@ -2,6 +2,14 @@ import { Stats } from 'fs';
 import * as restify from 'restify';
 import { Response } from 'supertest';
 
+// Too many issues with Chai namespace and typings
+interface ChaiAssertionError {
+    name: string;
+    message: string;
+    showDiff: boolean;
+    stack: string;
+}
+
 export interface ImkdirpOpts {
     fs?: {
         mkdir: (path: string | Buffer, mode: number,
@@ -49,18 +57,26 @@ export interface IncomingMessageError {
     restCode: 'IncomingMessageError';
 }
 
+export interface IDependencies {
+    [key: string]: {
+        _dependencies?: string[]
+    }
+}
+
 export type TCallback<E, R> = (err?: E, res?: R) => R | void;
 export type TCallbackR<A, B, R> = (a?: A, b?: B) => R | void;
 export type strCb = TCallback<Error, string>;
 export type strCbV = TCallbackR<Error, string, void>;
 export type numCb = TCallback<Error, number>;
 export type HttpStrResp = (error: Error | IncomingMessageError, response?: Response) => string;
+export type AccessTokenType = string;
+export type SuperTestResp = TCallback<Error | IncomingMessageError, Response>;
 
 export declare const trivial_merge: (obj: any, ...objects: {}[]) => any;
 export declare const isShallowSubset: (o0: {} | any[], o1: {} | any[]) => boolean;
 export declare const binarySearch: (a: any[], e: any, c?: (a: any, b: any) => boolean) => number;
 export declare const trivialWalk: (dir: string, excludeDirs?: string[]) => any;
-export declare const populateModelRoutes: (dir: string, allowedFnames?: string[]) => IModelRoute;
+export declare const populateModelRoutes: (dir: string, allowedFnames?: string[]) => Map<string, any>;
 export declare const objListToObj: (objList: {}[]) => {};
 export declare const groupBy: (array: any[], f: Function) => any[];
 export declare const getUTCDate: (now?: Date) => Date;
@@ -81,5 +97,13 @@ export declare const getError: (err: Error | IncomingMessageError) => Error | In
 export declare const superEndCb: (callback: TCallback<Error | IncomingMessageError, Response>) =>
     (e: Error | IncomingMessageError, r?: Response) => void | Response;
 export declare const debugCb: (name: string, callback: TCallback<any, any>) => (e: any, r: any) => any;
-export declare const uniqIgnoreCb: (callback: TCallback<Error | Chai.AssertionError | {message: string;}, any>) =>
-    (err: Error | Chai.AssertionError | {message: string;}, res: any) => any;
+export declare const uniqIgnoreCb: (callback: TCallback<Error | ChaiAssertionError | {message: string;}, any>) =>
+    (err: Error | ChaiAssertionError | {message: string;}, res: any) => any;
+
+export declare function permute<T>(permutation: T[] | T | any): IterableIterator<T>;
+export declare const build_dep_graph: (dependencies: IDependencies[]) => Map<string, any>;
+export declare const groupByMap: <T>(list: Map<T, any>, keyGetter: (key: any) => any) => Map<T, any>;
+export declare const get_models_routes: (models_routes: Map<string, any>) => IModelRoute;
+export declare const model_route_to_map: (model_route: IModelRoute) => Map<string, any>;
+export declare const toSentenceCase: (s: string) => string;
+export declare const resolveIntFromObject: (obj: {}) => {};
